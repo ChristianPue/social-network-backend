@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Map;
 import java.util.function.Function;
@@ -46,7 +47,7 @@ public class JwtService {
       .setSubject(userDetails.getUsername())
       .setIssuedAt(new Date(System.currentTimeMillis()))
       .setExpiration(new Date(System.currentTimeMillis() + expiration))
-      .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+      .signWith(getSignInKey())
       .compact();
   }
   
@@ -64,7 +65,7 @@ public class JwtService {
   }
   
   private Claims extractAllClaims(String token) {
-    return Jwts.parserBuilder()
+    return Jwts.parser()
       .setSigningKey(getSignInKey())
       .build()
       .parseClaimsJws(token)
@@ -72,7 +73,7 @@ public class JwtService {
   }
   
   private SecretKey getSignInKey() {
-    byte[] keyBytes = secretKey.getBytes();
+    byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
     return Keys.hmacShaKeyFor(keyBytes);
   }
 }
